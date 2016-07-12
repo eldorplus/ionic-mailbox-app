@@ -23,7 +23,7 @@ import {UnreadInbox} from './unread-inbox';
           <ion-icon name="checkmark-circle"></ion-icon>
         </ion-segment-button>
       </ion-segment>
-      <ion-buttons end *ngIf="activeSegment === 'inbox' && ! reorderEnabled">
+      <!--<ion-buttons end *ngIf="activeSegment === 'inbox' && ! reorderEnabled">
         <button (click)="toggleReorder(true)">
           <ion-icon name="reorder"></ion-icon>
         </button>
@@ -32,7 +32,7 @@ import {UnreadInbox} from './unread-inbox';
         <button (click)="toggleReorder(false)">
           <ion-icon name="close"></ion-icon>
         </button>
-      </ion-buttons>
+      </ion-buttons>-->
     </ion-navbar>
   </ion-header>
   <ion-content [ngSwitch]="activeSegment">
