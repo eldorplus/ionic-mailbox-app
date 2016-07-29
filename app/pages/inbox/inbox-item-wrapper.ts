@@ -1,10 +1,7 @@
-import {Component, ContentChild, ElementRef, EventEmitter, Input, Output, ViewChild} from '@angular/core';
+import {Component, ContentChild, ElementRef, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {Animation, App, Item} from 'ionic-angular';
-//import {DragGestureRecognizerProvider} from '../../utils/gestures/drag-gesture-recognizer-provider';
-//import {GestureDirection} from '../../utils/gestures/gesture-direction';
-//import {ScrollDisabler} from '../../utils/scroll-disabler';
-
-import {PanGestureRecognizerProvider, GestureDirection} from 'ionic-angular';
+import {PanGesture, PanGestureController} from '../../utils/gestures/pan-gesture';
+import {GestureDirection} from '../../utils/gestures/gesture-direction';
 
 @Component({
   selector: `inbox-item-wrapper`,
@@ -40,6 +37,7 @@ import {PanGestureRecognizerProvider, GestureDirection} from 'ionic-angular';
 })
 export class InboxItemWrapper{
 
+  @Input() enabled: boolean;
   @Input() leftLabelTextShort: string;
   @Input() leftLabelTextLong: string;
   @Input() leftIconShort: string;
@@ -64,7 +62,7 @@ export class InboxItemWrapper{
   @ViewChild("leftCell") leftCellRef: ElementRef;
   @ViewChild("rightCell") rightCellRef: ElementRef;
 
-
+  protected panGesture: PanGesture;
   protected cellRect: any;
   protected percentageDragged: number;
   protected previousXPosition: number;
@@ -75,38 +73,51 @@ export class InboxItemWrapper{
   protected animating: boolean;
   protected state: string;
 
-  constructor(protected app: App, protected dragGestureRecognizerProvider: PanGestureRecognizerProvider, protected elementRef: ElementRef) {
+  constructor(protected app: App, protected panGestureController: PanGestureController, protected elementRef: ElementRef) {
   }
 
   ngAfterViewInit() {
 
-    let dragGesture = this.dragGestureRecognizerProvider.create(this.wrapperEleRef, {threshold: DRAG_THRESHOLD, direction: GestureDirection.HORIZONTAL});
-    dragGesture.listen();
+    this.panGesture = this.panGestureController.create(this.wrapperEleRef, {threshold: DRAG_THRESHOLD, direction: GestureDirection.HORIZONTAL});
+    this.panGesture.onPanStart((event) => {this.startDrag(event)});
+    this.panGesture.onPanMove((event) => {this.handleDrag(event)});
+    this.panGesture.onPanEnd((event) => {this.endDrag(event)});
+  }
 
-    let onPanStartSubscription = dragGesture.onPanStart.subscribe((event:HammerInput) => {
-      this.startDrag(event);
-    });
-
-    let onPanMoveSubscription = dragGesture.onPanMove.subscribe((event:HammerInput) => {
-      this.handleDrag(event);
-    });
-
-    let onPanEndSubscription = dragGesture.onPanEnd.subscribe((event:HammerInput) => {
-      this.endDrag(event);
-    });
+  ngOnChanges(changes: SimpleChanges ) {
+    if ( changes['enabled'] ) {
+      if ( changes['enabled'].currentValue === false ) {
+        //this.stopListeningForDrags();
+      }
+      else {
+        //this.startListeningForDrags();
+      }
+    }
   }
 
   getContainerWidth(){
     return this.cellRect.width;
   }
 
+  stopListeningForDrags() {
+    if ( this.panGesture ) {
+      this.panGesture.unlisten();
+      //this.app.setScrollDisabled(false);
+    }
+  }
+
+  startListeningForDrags() {
+    if ( this.panGesture ) {
+      this.panGesture.listen();
+      //this.app.setScrollDisabled(false);
+    }
+  }
+
   startDrag(event: HammerInput) {
-    if ( this.started || this.animating ){
+    if ( this.started || this.animating || ! this.enabled){
       return;
     }
 
-    //this.app.setEnabled(false, 400);
-    console.log("Disabling app");
     this.cellRect = this.wrapperEleRef.nativeElement.getBoundingClientRect();
 
     if ( event.direction === GestureDirection.LEFT ) {
@@ -120,7 +131,7 @@ export class InboxItemWrapper{
   }
 
   handleDrag(event:HammerInput) {
-    if ( ! this.started || this.animating ){
+    if ( ! this.started || this.animating || ! this.enabled){
       return;
     }
 
@@ -135,6 +146,13 @@ export class InboxItemWrapper{
       this.animating = true;
       return this.resetDrag(event);
     }
+
+    // check if we moved too many pixels vertically
+    if ( event.deltaY > this.cellRect.height / 2 ) {
+      this.animating = true;
+      return this.resetDrag(event);
+    }
+
     this.setState();
     this.maximumAchievedVelocity = Math.max(this.maximumAchievedVelocity, event.velocity);
     if ( this.leftToRight ) {
@@ -145,7 +163,7 @@ export class InboxItemWrapper{
   }
 
   endDrag(event: HammerInput) {
-    if ( ! this.started || this.animating ) {
+    if ( ! this.started || this.animating || ! this.enabled ) {
       return;
     }
 
@@ -167,12 +185,14 @@ export class InboxItemWrapper{
       let newPosition = 0 - this.getContainerWidth();
       this.animateLeftCellOut(currentPosition, newPosition, this.maximumAchievedVelocity, SUGGESTED_VELOCITY, () => {
         this.animationComplete();
+        (<any>event).releaseGesture && (<any>event).releaseGesture();
       });
     } else {
       let currentPosition = this.previousXPosition;
       let newPosition = this.getContainerWidth();
       this.animateRightCellOut(currentPosition, newPosition, this.maximumAchievedVelocity, SUGGESTED_VELOCITY, () => {
         this.animationComplete();
+        (<any>event).releaseGesture && (<any>event).releaseGesture();
       });
     }
   }
@@ -308,7 +328,7 @@ export class InboxItemWrapper{
     this.currentXPosition = null;
     this.previousXPosition = null;
     this.app.setEnabled(true);
-    console.log("enabling app");
+    //this.app.setScrollDisabled(false);
   }
 
   setState() {
@@ -360,13 +380,13 @@ export class InboxItemWrapper{
   }
 }
 
-const DRAG_THRESHOLD = 70;
+const DRAG_THRESHOLD = 85;
 const STATE_INACTIVE = "inactive";
 const STATE_DISABLED = "disabled";
 const STATE_SHORT_SWIPE = "short";
 const STATE_LONG_SWIPE = "long";
 
-const INCOMPLETE_DRAG_PERCENTAGE = .25;
-const SHORT_DRAG_PERCENTAGE = .45;
+const INCOMPLETE_DRAG_PERCENTAGE = .40;
+const SHORT_DRAG_PERCENTAGE = .60;
 
 export const SUGGESTED_VELOCITY = 3.0;

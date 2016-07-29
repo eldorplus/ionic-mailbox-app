@@ -11,10 +11,10 @@ import {SnoozeViewController} from '../snooze/snooze-view-controller';
   selector: 'unread-inbox',
   directives: [InboxItemWrapper],
   template: `
-  <ion-list reorder="reorderEnabled">
+  <ion-list >
     <inbox-item-wrapper #instance
       *ngFor="let email of emails; let i = index"
-      (click)="favorite(email)"
+      (tap)="favorite(email)"
       leftIconShort="checkmark"
       leftIconLong="close"
       rightIconShort="time"
@@ -109,6 +109,18 @@ export class UnreadInbox{
     animation.duration(DELETE_ANIMATION_DURATION);
     animation.onFinish(callback);
     animation.play();
+  }
+
+  reorder(fromTo: any){
+    let from = fromTo.from;
+    let to = fromTo.to;
+
+    let temp = this.emails.concat();
+    let tempValue = temp[from];
+    temp.splice(from, 1);
+    temp.splice(to, 0,  tempValue);
+
+    this.emails = temp;
   }
 }
 
