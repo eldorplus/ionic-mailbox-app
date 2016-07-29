@@ -90,14 +90,12 @@ export class UnreadInbox{
     alert.present();
   }
 
-  overrideAnimation(elementRef: ElementRef, currentPosition: number, originalNewPosition: number, maximumAchievedVelocity: number, minSuggestedVelocity: number): Animation{
+  overrideAnimation(inboxItemWrapper: InboxItemWrapper, elementRef: ElementRef, currentPosition: number, originalNewPosition: number, maximumAchievedVelocity: number, minSuggestedVelocity: number): Animation{
     let velocity = Math.max(Math.abs(maximumAchievedVelocity), minSuggestedVelocity);
     let transitionTimeInMillis = Math.abs(Math.floor(currentPosition/velocity));
+    inboxItemWrapper.setState();
     let animation = new Animation(elementRef,  {renderDelay: 0});
     animation.fromTo('translateX', `${currentPosition}px`, `${0}px`);
-    animation.before.addClass("short");
-    animation.before.removeClass("disabled");
-    animation.before.removeClass("long");
     animation.duration(transitionTimeInMillis);
     return animation;
   }
