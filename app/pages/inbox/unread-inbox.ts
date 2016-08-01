@@ -1,5 +1,4 @@
-import {Component, ContentChildren, ElementRef, Input, QueryList, ViewChildren} from "@angular/core";
-import {animate, state, style, trigger, transition} from '@angular/core';
+import {Component, ContentChildren, ElementRef, EventEmitter, Input, QueryList, ViewChildren} from "@angular/core";
 import {App, AlertController, Animation, NavController} from 'ionic-angular';
 
 import {EmailDataProvider, Email} from "./email-data-provider";
@@ -11,16 +10,16 @@ import {SnoozeViewController} from '../snooze/snooze-view-controller';
   selector: 'unread-inbox',
   directives: [InboxItemWrapper],
   template: `
-  <ion-list reorder="reorderEnabled">
+  <ion-list *ngIf="!reorderEnabled">
     <inbox-item-wrapper #instance
       *ngFor="let email of emails; let i = index"
-      (click)="favorite(email)"
       leftIconShort="checkmark"
       leftIconLong="close"
       rightIconShort="time"
       rightIconLong="menu"
       [enabled]="!reorderEnabled"
       [overrideRightShortSwipeTransition]="overrideAnimation"
+      (tapGesture)="favorite(email)"
       (leftShortSwipe)="archive(i)"
       (leftLongSwipe)="delete(i)"
       (rightShortSwipe)="snooze(i)"
@@ -35,16 +34,32 @@ import {SnoozeViewController} from '../snooze/snooze-view-controller';
       </button>
     </inbox-item-wrapper>
   </ion-list>
+
+  <ion-list [reorder]="reorderEnabled" (ionItemReorder)="reorder($event)" *ngIf="reorderEnabled">
+    <ion-item *ngFor="let email of emails; let i = index">
+      <ion-icon ios="ios-star-outline" md="ios-star-outline" item-left *ngIf="!email.favorited" primary></ion-icon>
+      <ion-icon class="yellow" ios="ios-star" md="ios-star" item-left *ngIf="email.favorited"></ion-icon>
+      <p>{{email.sender}}</p>
+      <h2>{{email.subject}}</h2>
+      <p>{{email.body}}</p>
+    </ion-item>
+  </ion-list>
   `
 })
 export class UnreadInbox{
 
-  @Input() reorderEnabled: boolean = false;
+  @Input() reorderEnabled: boolean;
   @ViewChildren('instance', {read: ElementRef}) itemWrappers: QueryList<ElementRef>;
-
   private emails: Email[];
 
-  constructor(private alertController: AlertController, private app: App, private emailDataProvider: EmailDataProvider, private nav: NavController, private snoozeViewController: SnoozeViewController){
+  constructor(private alertController: AlertController,
+              private app: App,
+              private emailDataProvider: EmailDataProvider,
+              private nav: NavController,
+              private snoozeViewController: SnoozeViewController){
+  }
+
+  ngAfterViewInit(){
     this.loadUnreadEmails();
   }
 
@@ -90,14 +105,12 @@ export class UnreadInbox{
     alert.present();
   }
 
-  overrideAnimation(elementRef: ElementRef, currentPosition: number, originalNewPosition: number, maximumAchievedVelocity: number, minSuggestedVelocity: number): Animation{
+  overrideAnimation(inboxItemWrapper: InboxItemWrapper, elementRef: ElementRef, currentPosition: number, originalNewPosition: number, maximumAchievedVelocity: number, minSuggestedVelocity: number): Animation{
     let velocity = Math.max(Math.abs(maximumAchievedVelocity), minSuggestedVelocity);
     let transitionTimeInMillis = Math.abs(Math.floor(currentPosition/velocity));
+    inboxItemWrapper.setState();
     let animation = new Animation(elementRef,  {renderDelay: 0});
     animation.fromTo('translateX', `${currentPosition}px`, `${0}px`);
-    animation.before.addClass("short");
-    animation.before.removeClass("disabled");
-    animation.before.removeClass("long");
     animation.duration(transitionTimeInMillis);
     return animation;
   }
@@ -111,6 +124,18 @@ export class UnreadInbox{
     animation.duration(DELETE_ANIMATION_DURATION);
     animation.onFinish(callback);
     animation.play();
+  }
+
+  reorder(fromTo: any){
+    let from = fromTo.from;
+    let to = fromTo.to;
+
+    let temp = this.emails.concat();
+    let tempValue = temp[from];
+    temp.splice(from, 1);
+    temp.splice(to, 0,  tempValue);
+
+    this.emails = temp;
   }
 }
 
