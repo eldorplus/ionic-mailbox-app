@@ -1,5 +1,5 @@
 import {Component, ContentChild, ElementRef, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
-import {Animation, App, Item} from 'ionic-angular';
+import {Animation, App, DisableScroll, Item} from 'ionic-angular';
 import {PanGesture, PanGestureController} from '../../utils/gestures/pan-gesture';
 import {GestureDirection} from '../../utils/gestures/gesture-direction';
 
@@ -78,7 +78,7 @@ export class InboxItemWrapper{
 
   ngAfterViewInit() {
 
-    this.panGesture = this.panGestureController.create(this.wrapperEleRef, {threshold: DRAG_THRESHOLD, direction: GestureDirection.HORIZONTAL});
+    this.panGesture = this.panGestureController.create(this.wrapperEleRef, {threshold: DRAG_THRESHOLD, direction: GestureDirection.HORIZONTAL, disableScroll: DisableScroll.Never});
     this.panGesture.onPanStart((event) => {this.startDrag(event)});
     this.panGesture.onPanMove((event) => {this.handleDrag(event)});
     this.panGesture.onPanEnd((event) => {this.endDrag(event)});

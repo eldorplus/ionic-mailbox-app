@@ -45,11 +45,11 @@ export class InboxPage{
   }
 
   toggleReorder(enabled: boolean){
-    this.reorderEnabled = enabled;
+    //this.reorderEnabled = enabled;
   }
 
   activeSegmentChanged(newActiveSegment: string){
-    this.toggleReorder(false);
-    this.activeSegment = newActiveSegment;
+    //this.toggleReorder(false);
+    //this.activeSegment = newActiveSegment;
   }
 }
