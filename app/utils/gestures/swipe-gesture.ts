@@ -29,6 +29,11 @@ export class SwipeGesture extends BaseHammerGesture {
     this.hammerManager.off('swipe', this._onSwipeHandlerInternal);
   }
 
+  destroy() {
+    super.destroy();
+    this.onSwipeHandler = null;
+  }
+
   onSwipeHandlerInternal(event: HammerInput) {
     try {
 
@@ -97,11 +102,7 @@ export class SwipeGestureController {
   constructor(private gestureController: GestureController, private hammerFactory: HammerFactory) {
   }
 
-  create(elementRef: ElementRef, options: SwipeGestureOptions) {
-    // assign reasonable defaults
-    options.direction = !!options.direction ? options.direction : GestureDirection.ALL;
-    options.threshold = !!options.threshold ? options.threshold : DEFAULT_THRESHOLD;
-    options.pointers = !!options.pointers ? options.pointers : DEFAULT_NUM_POINTERS;
+  create(elementRef: ElementRef, options: SwipeGestureOptions = {}) {
     options.priority = !!options.priority ? options.priority : GesturePriority.Normal;
     options.disableScroll = !!options.disableScroll ? options.disableScroll : DisableScroll.DuringCapture;
     let delegate = this.gestureController.create(`swipe-gesture-#${++count}`, {
@@ -114,6 +115,3 @@ export class SwipeGestureController {
 }
 
 let count = 0;
-
-const DEFAULT_NUM_POINTERS = 1;
-const DEFAULT_THRESHOLD = 10;

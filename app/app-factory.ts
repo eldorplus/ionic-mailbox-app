@@ -1,4 +1,5 @@
 
+import {HorizontalEdgePanGestureController} from './utils/gestures/horizontal-edge-pan-gesture';
 import {PanGestureController} from './utils/gestures/pan-gesture';
 import {PinchGestureController} from './utils/gestures/pinch-gesture';
 import {PressGestureController} from './utils/gestures/press-gesture';
@@ -18,6 +19,7 @@ export function getProviders(){
     providers.push(EmailDataProvider);
 
     /* Gesture Recognizers */
+    providers.push(HorizontalEdgePanGestureController);
     providers.push(PanGestureController);
     providers.push(PinchGestureController);
     providers.push(PressGestureController);
@@ -26,7 +28,7 @@ export function getProviders(){
     providers.push(TapGestureController);
 
     providers.push(HammerFactory);
-    
+
     providers.push(SnoozeViewController);
 
     return providers;

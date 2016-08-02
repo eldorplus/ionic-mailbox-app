@@ -63,6 +63,16 @@ export class PinchGesture extends BaseHammerGesture {
     this.hammerManager.off('pinchout', this._onPinchOutHandlerInternal);
   }
 
+  destroy() {
+    super.destroy();
+    this.onPinchStartHandler = null;
+    this.onPinchMoveHandler = null;
+    this.onPinchEndHandler = null;
+    this.onPinchCancelHandler = null;
+    this.onPinchInHandler = null;
+    this.onPinchOutHandler = null;
+  }
+
   onPinchStartHandlerInternal(event: HammerInput) {
     try {
       if ( this.started ) {
@@ -243,9 +253,7 @@ export class PinchGestureController {
   constructor(private gestureController: GestureController, private hammerFactory: HammerFactory) {
   }
 
-  create(elementRef: ElementRef, options: PinchGestureOptions) {
-    options.threshold = !!options.threshold ? options.threshold : DEFAULT_THRESHOLD;
-    options.pointers = !!options.pointers ? options.pointers : DEFAULT_NUM_POINTERS;
+  create(elementRef: ElementRef, options: PinchGestureOptions = {}) {
     options.priority = !!options.priority ? options.priority : GesturePriority.Normal;
     options.disableScroll = !!options.disableScroll ? options.disableScroll : DisableScroll.DuringCapture;
 
@@ -259,7 +267,3 @@ export class PinchGestureController {
 }
 
 let count = 0;
-
-
-const DEFAULT_THRESHOLD: number = 0;
-const DEFAULT_NUM_POINTERS = 2;

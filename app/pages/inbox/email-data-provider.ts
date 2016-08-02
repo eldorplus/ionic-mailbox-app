@@ -68,6 +68,16 @@ export class EmailDataProvider {
     email.snoozed = true;
     email.archived = false;
   }
+
+  reorder(fromIndex: number, toIndex: number) {
+    let temp = this.emails.concat();
+    let tempValue = temp[fromIndex];
+    temp.splice(fromIndex, 1);
+    temp.splice(toIndex, 0,  tempValue);
+
+    this.emails = temp;
+    return temp;
+  }
 }
 
 export class Email{

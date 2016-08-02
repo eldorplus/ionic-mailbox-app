@@ -50,6 +50,14 @@ export class RotateGesture extends BaseHammerGesture {
     this.hammerManager.off('rotatecancel', this._onRotateCancelHandlerInternal);
   }
 
+  destroy() {
+    super.destroy();
+    this.onRotateStartHandler = null;
+    this.onRotateMoveHandler = null;
+    this.onRotateEndHandler = null;
+    this.onRotateCancelHandler = null;
+  }
+
   onRotateStartHandlerInternal(event: HammerInput) {
     try {
       if ( this.started ) {
@@ -184,9 +192,7 @@ export class RotateGestureController {
   constructor(private gestureController: GestureController, private hammerFactory: HammerFactory) {
   }
 
-  create(elementRef: ElementRef, options: RotateGestureOptions) {
-    options.threshold = !!options.threshold ? options.threshold : DEFAULT_THRESHOLD;
-    options.pointers = !!options.pointers ? options.pointers : DEFAULT_NUM_POINTERS;
+  create(elementRef: ElementRef, options: RotateGestureOptions = {}) {
     options.priority = !!options.priority ? options.priority : GesturePriority.Normal;
     options.disableScroll = !!options.disableScroll ? options.disableScroll : DisableScroll.DuringCapture;
 
@@ -200,6 +206,3 @@ export class RotateGestureController {
 }
 
 let count = 0;
-
-const DEFAULT_THRESHOLD = 0;
-const DEFAULT_NUM_POINTERS = 2;

@@ -18,6 +18,7 @@ export abstract class BaseHammerGesture {
     protected eventBlocker: boolean;
 
     /* hammer stuff */
+    protected options: any;
     protected recognizer: Recognizer;
     protected hammerManager: HammerManager;
 
@@ -26,7 +27,8 @@ export abstract class BaseHammerGesture {
     };
 
     constructor(protected delegate: GestureDelegate, protected hammerFactory: HammerFactory, recognizerFactory: Function, options: any, protected element: ElementRef) {
-      this.recognizer = recognizerFactory(this.getMergedOptions(options));
+      this.options = this.getMergedOptions(options);
+      this.recognizer = recognizerFactory(this.options);
     }
 
     getMergedOptions(opts: any = {}): any {

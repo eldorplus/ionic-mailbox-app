@@ -23,7 +23,7 @@ import {PressGestureController} from '../../utils/gestures/press-gesture';
         </ion-segment-button>
       </ion-segment>
       <ion-buttons end *ngIf="activeSegment === 'inbox' && reorderEnabled">
-        <button clear (click)="disableReorder()">Done</button>
+        <button (click)="disableReorder()" primary>Done</button>
       </ion-buttons>
     </ion-navbar>
   </ion-header>
@@ -56,7 +56,6 @@ export class InboxPage{
   ionViewDidEnter(){
     let gesture = this.pressGestureController.create(this.content, {});
     gesture.onPress( (event) => {
-      console.log("On Press");
       if ( this.activeSegment === 'inbox' ) {
         this.reorderEnabled = true;
       }

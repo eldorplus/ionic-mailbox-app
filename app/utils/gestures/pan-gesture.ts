@@ -7,24 +7,24 @@ import {HammerFactory} from './hammer-factory';
 
 export class PanGesture extends BaseHammerGesture {
 
-  private onPanStartHandler: (event: HammerInput) => any;
-  private onPanMoveHandler: (event: HammerInput) => any;
-  private onPanEndHandler: (event: HammerInput) => any;
-  private onPanCancelHandler: (event: HammerInput) => any;
+  protected onPanStartHandler: (event: HammerInput) => any;
+  protected onPanMoveHandler: (event: HammerInput) => any;
+  protected onPanEndHandler: (event: HammerInput) => any;
+  protected onPanCancelHandler: (event: HammerInput) => any;
 
-  private _onPanStartHandlerInternal = (event: HammerInput) => {
+  protected _onPanStartHandlerInternal = (event: HammerInput) => {
     this.onPanStartHandlerInternal(event);
   }
 
-  private _onPanMoveHandlerInternal = (event: HammerInput) => {
+  protected _onPanMoveHandlerInternal = (event: HammerInput) => {
     this.onPanMoveHandlerInternal(event);
   }
 
-  private _onPanEndHandlerInternal = (event: HammerInput) => {
+  protected _onPanEndHandlerInternal = (event: HammerInput) => {
     this.onPanEndHandlerInternal(event);
   }
 
-  private _onPanCancelHandlerInternal = (event: HammerInput) => {
+  protected _onPanCancelHandlerInternal = (event: HammerInput) => {
     this.onPanCancelHandlerInternal(event);
   }
 
@@ -49,7 +49,15 @@ export class PanGesture extends BaseHammerGesture {
     this.hammerManager.off('pancancel', this._onPanCancelHandlerInternal);
   }
 
-  private onPanStartHandlerInternal(event: HammerInput) {
+  destroy() {
+    super.destroy();
+    this.onPanStartHandler = null;
+    this.onPanMoveHandler = null;
+    this.onPanEndHandler = null;
+    this.onPanCancelHandler = null;
+  }
+
+  protected onPanStartHandlerInternal(event: HammerInput) {
     try {
       if ( this.started ) {
         throw new Error('Already started');
@@ -91,7 +99,7 @@ export class PanGesture extends BaseHammerGesture {
     }
   }
 
-  private onPanMoveHandlerInternal(event: HammerInput) {
+  protected onPanMoveHandlerInternal(event: HammerInput) {
     try {
       if ( ! this.started ) {
         throw new Error('Not started');
@@ -110,7 +118,7 @@ export class PanGesture extends BaseHammerGesture {
     }
   }
 
-  private onPanEndHandlerInternal(event: HammerInput) {
+  protected onPanEndHandlerInternal(event: HammerInput) {
     try {
       if ( ! this.started ) {
         throw new Error('Not started');
@@ -136,7 +144,7 @@ export class PanGesture extends BaseHammerGesture {
     }
   }
 
-  private onPanCancelHandlerInternal(event: HammerInput) {
+  protected onPanCancelHandlerInternal(event: HammerInput) {
     try {
       if ( this.onPanCancelHandler ) {
         this.onPanCancelHandler(event);
@@ -181,14 +189,10 @@ export interface PanGestureOptions {
 
 @Injectable()
 export class PanGestureController {
-  constructor(private gestureController: GestureController, private hammerFactory: HammerFactory) {
+  constructor(protected gestureController: GestureController, protected hammerFactory: HammerFactory) {
   }
 
-  create(elementRef: ElementRef, options: PanGestureOptions) {
-    // assign reasonable defaults
-    options.direction = !!options.direction ? options.direction : GestureDirection.ALL;
-    options.threshold = !!options.threshold ? options.threshold : DEFAULT_THRESHOLD;
-    options.pointers = !!options.pointers ? options.pointers : 1;
+  create(elementRef: ElementRef, options: PanGestureOptions = {}) {
     options.priority = !!options.priority ? options.priority : GesturePriority.Normal;
     options.disableScroll = !!options.disableScroll ? options.disableScroll : DisableScroll.DuringCapture;
 
@@ -202,4 +206,3 @@ export class PanGestureController {
 }
 
 let count = 0;
-const DEFAULT_THRESHOLD: number = 1;

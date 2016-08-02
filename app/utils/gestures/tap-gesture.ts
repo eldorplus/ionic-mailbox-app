@@ -29,6 +29,11 @@ export class TapGesture extends BaseHammerGesture {
     super.unlisten();
   }
 
+  destroy() {
+    super.destroy();
+    this.onTapHandler = null;
+  }
+
   onTapHandlerInternal(event: HammerInput) {
     try {
       if ( this.started ) {
@@ -114,13 +119,7 @@ export class TapGestureController {
   constructor(private gestureController: GestureController, private hammerFactory: HammerFactory) {
   }
 
-  create(elementRef: ElementRef, options: TapGestureOptions) {
-    options.pointers = !!options.pointers ? options.pointers : DEFAULT_NUM_POINTERS;
-    options.taps = !!options.taps ? options.taps : DEFAULT_NUM_TAPS;
-    options.interval = !!options.interval ? options.interval : DEFAULT_INTERVAL;
-    options.time = !!options.time ? options.time : DEFAULT_TIME;
-    options.threshold = !!options.threshold ? options.threshold : DEFAULT_THRESHOLD;
-    options.posThreshold = !!options.posThreshold ? options.posThreshold : DEFAULT_POSITION_THRESHOLD;
+  create(elementRef: ElementRef, options: TapGestureOptions = {}) {
     options.priority = !!options.priority ? options.priority : GesturePriority.Normal;
     options.disableScroll = !!options.disableScroll ? options.disableScroll : DisableScroll.Never;
     let delegate = this.gestureController.create(`tap-gesture-#${++count}`, {
@@ -133,10 +132,3 @@ export class TapGestureController {
 }
 
 let count = 0;
-
-const DEFAULT_NUM_POINTERS = 1;
-const DEFAULT_NUM_TAPS = 1;
-const DEFAULT_INTERVAL = 300;
-const DEFAULT_TIME = 250;
-const DEFAULT_THRESHOLD = 2;
-const DEFAULT_POSITION_THRESHOLD = 10;

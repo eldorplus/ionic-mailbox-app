@@ -1,7 +1,7 @@
 import {Component, ContentChild, ElementRef, EventEmitter, Input, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {Animation, App, DisableScroll, Item} from 'ionic-angular';
 import {GestureDirection} from '../../utils/gestures/gesture-direction';
-import {PanGesture, PanGestureController} from '../../utils/gestures/pan-gesture';
+import {HorizontalEdgePanGesture, HorizontalEdgePanGestureController} from '../../utils/gestures/horizontal-edge-pan-gesture';
 import {TapGestureController} from '../../utils/gestures/tap-gesture';
 
 @Component({
@@ -64,7 +64,7 @@ export class InboxItemWrapper{
   @ViewChild("leftCell") leftCellRef: ElementRef;
   @ViewChild("rightCell") rightCellRef: ElementRef;
 
-  protected panGesture: PanGesture;
+  protected panGesture: HorizontalEdgePanGesture;
   protected cellRect: any;
   protected percentageDragged: number;
   protected previousXPosition: number;
@@ -77,21 +77,23 @@ export class InboxItemWrapper{
 
   constructor(protected app: App,
               protected elementRef: ElementRef,
-              protected panGestureController: PanGestureController,
+              protected panGestureController: HorizontalEdgePanGestureController,
               protected tapGestureController: TapGestureController) {
   }
 
   ngAfterViewInit() {
+    // give everything a chance to measure itself
+    setTimeout( () => {
+      this.panGesture = this.panGestureController.create(this.wrapperEleRef, {threshold: DRAG_THRESHOLD, disableScroll: DisableScroll.DuringCapture});
+      this.panGesture.onPanStart((event) => {this.startDrag(event)});
+      this.panGesture.onPanMove((event) => {this.handleDrag(event)});
+      this.panGesture.onPanEnd((event) => {this.endDrag(event)});
 
-    this.panGesture = this.panGestureController.create(this.wrapperEleRef, {threshold: DRAG_THRESHOLD, direction: GestureDirection.HORIZONTAL, disableScroll: DisableScroll.Never});
-    this.panGesture.onPanStart((event) => {this.startDrag(event)});
-    this.panGesture.onPanMove((event) => {this.handleDrag(event)});
-    this.panGesture.onPanEnd((event) => {this.endDrag(event)});
-
-    let tapGesture = this.tapGestureController.create(this.wrapperEleRef, {});
-    tapGesture.onTap( () => {
-      this.handleTap();
-    });
+      let tapGesture = this.tapGestureController.create(this.wrapperEleRef, {});
+      tapGesture.onTap( () => {
+        this.handleTap();
+      });
+    }, 250);
   }
 
   getContainerWidth(){
@@ -160,10 +162,7 @@ export class InboxItemWrapper{
     }
 
     this.animating = true;
-    if ( this.percentageDragged < INCOMPLETE_DRAG_PERCENTAGE ) {
-      this.resetDrag(event);
-    }
-    else if ( this.percentageDragged < SHORT_DRAG_PERCENTAGE ) {
+    if ( this.percentageDragged < SHORT_DRAG_PERCENTAGE ) {
       this.shortDrag(event);
     }
     else{
@@ -324,10 +323,7 @@ export class InboxItemWrapper{
   }
 
   setState() {
-    if (  this.percentageDragged < INCOMPLETE_DRAG_PERCENTAGE ) {
-      this.state = STATE_DISABLED;
-    }
-    else if ( this.percentageDragged < SHORT_DRAG_PERCENTAGE) {
+    if ( this.percentageDragged < SHORT_DRAG_PERCENTAGE) {
       this.state = STATE_SHORT_SWIPE;
     }
     else{
@@ -336,7 +332,7 @@ export class InboxItemWrapper{
   }
 
   areAccessoriesVisible() {
-    return !(this.percentageDragged < INCOMPLETE_DRAG_PERCENTAGE);
+    return true;
   }
 
   isShortDrag() {
@@ -372,13 +368,11 @@ export class InboxItemWrapper{
   }
 }
 
-const DRAG_THRESHOLD = 85;
+const DRAG_THRESHOLD = 80;
 const STATE_INACTIVE = "inactive";
-const STATE_DISABLED = "disabled";
 const STATE_SHORT_SWIPE = "short";
 const STATE_LONG_SWIPE = "long";
 
-const INCOMPLETE_DRAG_PERCENTAGE = .40;
 const SHORT_DRAG_PERCENTAGE = .60;
 
 export const SUGGESTED_VELOCITY = 3.0;

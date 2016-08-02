@@ -10,7 +10,7 @@ import {SnoozeViewController} from '../snooze/snooze-view-controller';
   selector: 'unread-inbox',
   directives: [InboxItemWrapper],
   template: `
-  <ion-list *ngIf="!reorderEnabled">
+  <ion-list class="mailbox-cell-list" *ngIf="!reorderEnabled">
     <inbox-item-wrapper #instance
       *ngFor="let email of emails; let i = index"
       leftIconShort="checkmark"
@@ -57,9 +57,6 @@ export class UnreadInbox{
               private emailDataProvider: EmailDataProvider,
               private nav: NavController,
               private snoozeViewController: SnoozeViewController){
-  }
-
-  ngAfterViewInit(){
     this.loadUnreadEmails();
   }
 
@@ -130,12 +127,7 @@ export class UnreadInbox{
     let from = fromTo.from;
     let to = fromTo.to;
 
-    let temp = this.emails.concat();
-    let tempValue = temp[from];
-    temp.splice(from, 1);
-    temp.splice(to, 0,  tempValue);
-
-    this.emails = temp;
+    this.emails = this.emailDataProvider.reorder(from, to);
   }
 }
 

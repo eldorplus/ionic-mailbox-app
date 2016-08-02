@@ -161,8 +161,8 @@ ion-backdrop {
   margin-right: 5px;
 }
 
-/*.click-block-active {
-  opacity: 0.5;
-  background-color: red;
+.reorder-enabled:first-child {
+  .item {
+    border-top: 0px;
+  }
 }
-*/
